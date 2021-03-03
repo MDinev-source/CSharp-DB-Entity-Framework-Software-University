@@ -1,18 +1,19 @@
 ﻿namespace BookShop.DataProcessor
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Xml.Serialization;
-    using BookShop.Data.Models;
-    using BookShop.Data.Models.Enums;
-    using BookShop.DataProcessor.ImportDto;
     using Data;
+    using System;
+    using System.IO;
+    using System.Text;
+    using System.Linq;
     using Newtonsoft.Json;
+    using System.Globalization;
+    using BookShop.Data.Models;
+    using System.Xml.Serialization;
+    using BookShop.Data.Models.Enums;
+    using System.Collections.Generic;
+    using BookShop.DataProcessor.ImportDto;
+    using System.ComponentModel.DataAnnotations;
+
     using ValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
 
     public class Deserializer
@@ -33,7 +34,7 @@
 
             using (StringReader stringReader = new StringReader(xmlString))
             {
-                ImportBookDto[] bookDtos =(ImportBookDto[]) xmlSerializer.Deserialize(stringReader);
+                ImportBookDto[] bookDtos = (ImportBookDto[])xmlSerializer.Deserialize(stringReader);
 
                 List<Book> validBooks = new List<Book>();
 
@@ -124,8 +125,8 @@
 
                     author.AuthorsBooks.Add(new AuthorBook
                     {
-                        Author=author,
-                        Book=book
+                        Author = author,
+                        Book = book
                     });
 
                     if (author.AuthorsBooks.Count == 0)
@@ -138,10 +139,10 @@
                     sb.AppendLine(String.Format(SuccessfullyImportedAuthor, (author.FirstName + ' ' + author.LastName), author.AuthorsBooks.Count));
                 }
 
-            }       
-                context.Authors.AddRange(authors);
-                context.SaveChanges();
-                return sb.ToString().TrimEnd();
+            }
+            context.Authors.AddRange(authors);
+            context.SaveChanges();
+            return sb.ToString().TrimEnd();
         }
 
         private static bool IsValid(object dto)

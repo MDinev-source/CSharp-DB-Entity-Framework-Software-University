@@ -2,11 +2,12 @@
 {
     using System;
 
+    using BookShop.Data.Models.Enums;
+
     using System.Collections.Generic;
 
     using System.ComponentModel.DataAnnotations;
 
-    using BookShop.Data.Models.Enums;
     public class Book
     {
         public Book()

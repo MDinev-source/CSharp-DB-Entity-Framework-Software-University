@@ -1,5 +1,7 @@
 ﻿namespace BookShop
 {
+    using Data;
+
     using System;
 
     using System.IO;
@@ -7,8 +9,6 @@
     using System.Globalization;
 
     using Microsoft.EntityFrameworkCore;
-
-    using Data;
 
     public class StartUp
     {
@@ -22,12 +22,12 @@
 
             ImportEntities(context, projectDir + @"Datasets/", projectDir + @"ImportResults/");
 
-            //ExportEntities(context, projectDir + @"ExportResults/");
+            ExportEntities(context, projectDir + @"ExportResults/");
 
-            //using (var transaction = context.Database.BeginTransaction())
-            //{
-            //    transaction.Rollback();
-            //}
+            using (var transaction = context.Database.BeginTransaction())
+            {
+                transaction.Rollback();
+            }
         }
 
         private static void ImportEntities(BookShopContext context, string baseDir, string exportDir)
@@ -38,11 +38,11 @@
 
             PrintAndExportEntityToFile(projects, exportDir + "Actual Result - ImportBooks.txt");
 
-            //var employees =
-            // DataProcessor.Deserializer.ImportAuthors(context,
-            //     File.ReadAllText(baseDir + "authors.json"));
+            var employees =
+             DataProcessor.Deserializer.ImportAuthors(context,
+                 File.ReadAllText(baseDir + "authors.json"));
 
-            //PrintAndExportEntityToFile(employees, exportDir + "Actual Result - ImportAuthors.txt");
+            PrintAndExportEntityToFile(employees, exportDir + "Actual Result - ImportAuthors.txt");
         }
 
         private static void ExportEntities(BookShopContext context, string exportDir)

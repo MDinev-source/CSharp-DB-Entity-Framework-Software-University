@@ -1,8 +1,9 @@
 ﻿namespace BookShop.DataProcessor.ImportDto
 {
+    using System.Xml.Serialization;
+
     using System.ComponentModel.DataAnnotations;
 
-    using System.Xml.Serialization;
 
     [XmlType("Book")]
     public class ImportBookDto
@@ -25,6 +26,7 @@
         [XmlElement("Pages")]
         public int Pages { get; set; }
 
+        [Required]
         [XmlElement("PublishedOn")]
         public string PublishedOn { get; set; }
     }
