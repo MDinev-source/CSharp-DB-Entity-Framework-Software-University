@@ -1,9 +1,0 @@
-{
-  "runtimeOptions": {
-    "additionalProbingPaths": [
-      "C:\\Users\\Milko Qni Emi PC\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\Milko Qni Emi PC\\.nuget\\packages",
-      "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-    ]
-  }
-}
