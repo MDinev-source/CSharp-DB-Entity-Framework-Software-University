@@ -12,11 +12,11 @@
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        [MaxLength(20)]
+        [MinLength(3), MaxLength(20), Required]
         public string Name { get; set; }
 
         public bool Is4Dx { get; set; }
+
         public bool Is3D { get; set; }
 
         public ICollection<Projection> Projections { get; set; }

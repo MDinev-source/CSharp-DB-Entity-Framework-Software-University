@@ -15,14 +15,14 @@
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        [ForeignKey(nameof(Movie))]
-        public int Movieid { get; set; }
+        [ForeignKey(nameof(Movie)), Required]
+        public int MovieId { get; set; }
+
         public Movie Movie { get; set; }
 
-        [Required]
-        [ForeignKey(nameof(Hall))]
+        [ForeignKey(nameof(Hall)), Required]
         public int HallId { get; set; }
+
         public Hall Hall { get; set; }
 
         [Required]
