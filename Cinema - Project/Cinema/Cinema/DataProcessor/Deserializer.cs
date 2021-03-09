@@ -12,6 +12,8 @@
     using Cinema.DataProcessor.ImportDto;
     using System.ComponentModel.DataAnnotations;
     using ValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
+    using System.Xml.Serialization;
+    using System.IO;
 
     public class Deserializer
     {
@@ -144,7 +146,38 @@
 
         public static string ImportProjections(CinemaContext context, string xmlString)
         {
-            throw new NotImplementedException();
+            var xmlSerializer = new XmlSerializer(typeof(ImportProjectionDto[]), new XmlRootAttribute("Projections"));
+
+            var projectionsDto = (ImportProjectionDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
+
+            List<Projection> projections = new List<Projection>();
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var projectionDto in projectionsDto)
+            {
+                Projection projection = Mapper.Map<Projection>(projectionDto);
+                bool isValidProjection = IsValid(projection);
+
+                var hall = context.Halls.Find(projectionDto.HallId);
+                var movie = context.Movies.Find(projectionDto.MovieId);
+
+                if (isValidProjection == false || hall == null || movie == null)
+                {
+                    sb.AppendLine(ErrorMessage);
+                    continue;
+                }
+
+                projection.Movie = movie;
+                projection.Hall = hall;
+                projections.Add(projection);
+
+                sb.AppendLine(string.Format(SuccessfulImportProjection,projection.Movie.Title, projection.DateTime.ToString(@"MM/dd/yyyy")));
+            }
+            context.Projections.AddRange(projections);
+            context.SaveChanges();
+
+            return sb.ToString().TrimEnd();
         }
 
         public static string ImportCustomerTickets(CinemaContext context, string xmlString)
