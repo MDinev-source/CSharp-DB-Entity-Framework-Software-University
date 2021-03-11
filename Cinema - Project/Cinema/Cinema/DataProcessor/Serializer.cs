@@ -1,14 +1,36 @@
 ﻿namespace Cinema.DataProcessor
 {
     using System;
-
+    using System.Linq;
     using Data;
 
     public class Serializer
     {
         public static string ExportTopMovies(CinemaContext context, int rating)
         {
-            throw new NotImplementedException();
+            var movies = context.Movies
+                .Where(m => m.Rating >= rating)
+                .Where(m => m.Projections.Any(p => p.Tickets.Count == 0))
+                .Select(m => new
+                {
+                    MovieName = m.Title,
+                    Raiting = m.Rating.ToString("F2"),
+                    TotalIncomes = m.Projections.Sum(p => p.Tickets.Sum(t => t.Price)).ToString("F2"),
+                    Customers = m.Projections
+                    .SelectMany(p => p.Tickets)
+                     .Select(c => new ExportMovieCustomersDto
+                     {
+                         FirstName = c.Customer.FirstName,
+                         LastName = c.Customer.LastName,
+                         Balance = c.Customer.Balance.ToString("F2")
+                     })
+                     .OrderByDescending(c => c.Balance)
+                    .ThenBy(c => c.FirstName)
+                    .ThenBy(c => c.LastName)
+                    .ToList()
+                })
+                .Take(10)
+                .ToList();
         }
 
         public static string ExportTopCustomers(CinemaContext context, int age)

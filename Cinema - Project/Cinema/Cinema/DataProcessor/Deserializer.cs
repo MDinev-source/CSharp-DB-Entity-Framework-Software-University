@@ -172,7 +172,7 @@
                 projection.Hall = hall;
                 projections.Add(projection);
 
-                sb.AppendLine(string.Format(SuccessfulImportProjection,projection.Movie.Title, projection.DateTime.ToString(@"MM/dd/yyyy")));
+                sb.AppendLine(string.Format(SuccessfulImportProjection, projection.Movie.Title, projection.DateTime.ToString(@"MM/dd/yyyy")));
             }
             context.Projections.AddRange(projections);
             context.SaveChanges();
@@ -182,7 +182,54 @@
 
         public static string ImportCustomerTickets(CinemaContext context, string xmlString)
         {
-            throw new NotImplementedException();
+            var xmlSerializer = new XmlSerializer(typeof(ImportCustomerDto[]), new XmlRootAttribute("Customer"));
+            var customersDto = (ImportCustomerDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
+
+            List<Customer> customers = new List<Customer>();
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var customerDto in customersDto)
+            {
+                Customer customer = Mapper.Map<Customer>(customerDto);
+
+                bool isValidCustomer = IsValid(customer);
+
+                var projectionsIds = context.Projections.Select(p => p.Id).ToList();
+
+                bool isProjectionsExist = customerDto.TicketsForProjection
+                    .Select(t => t.ProjectionId)
+                    .All(v => projectionsIds.Contains(v));
+
+                bool hasInvalidTickets = customerDto.TicketsForProjection.Any(t => IsValid(t) == false);
+
+                if (isValidCustomer == false || isProjectionsExist == false || hasInvalidTickets == true)
+                {
+                    sb.AppendLine(ErrorMessage);
+                    continue;
+                }
+
+                customer.Tickets = customerDto.TicketsForProjection
+                    .Select(t => new Ticket
+                    {
+                        ProjectionId = t.ProjectionId,
+                        Price = t.Price
+                    })
+                    .ToList();
+
+                customers.Add(customer);
+
+
+                sb.AppendLine(string.Format(SuccessfulImportCustomerTicket,
+                                   customer.FirstName,
+                                    customer.LastName,
+                                    customer.Tickets.Count()));
+            }
+
+            context.Customers.AddRange(customers);
+            context.SaveChanges();
+
+            return sb.ToString().TrimEnd();
         }
     }
 }
