@@ -2,18 +2,18 @@
 {
     using Data;
     using System;
+    using System.IO;
     using AutoMapper;
     using System.Linq;
     using System.Text;
     using Newtonsoft.Json;
     using Cinema.Data.Models;
     using Cinema.Data.Models.Enums;
+    using System.Xml.Serialization;
     using System.Collections.Generic;
     using Cinema.DataProcessor.ImportDto;
     using System.ComponentModel.DataAnnotations;
     using ValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
-    using System.Xml.Serialization;
-    using System.IO;
 
     public class Deserializer
     {
@@ -37,11 +37,10 @@
 
             foreach (var movieDto in moviesDto)
             {
-                bool IsValidGenre = Enum.IsDefined(typeof(Genre), movieDto.Genre);
-
+                bool isValidGenre = Enum.IsDefined(typeof(Genre), movieDto.Genre);
                 bool isMovieExist = movies.Any(m => m.Title == movieDto.Title);
 
-                if (IsValidGenre == false || isMovieExist == true)
+                if (isValidGenre == false || isMovieExist == true)
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
@@ -63,7 +62,6 @@
                     movie.Title,
                     movie.Genre.ToString(),
                     movie.Rating.ToString("F2")));
-
             }
 
             context.Movies.AddRange(movies);
@@ -182,7 +180,7 @@
 
         public static string ImportCustomerTickets(CinemaContext context, string xmlString)
         {
-            var xmlSerializer = new XmlSerializer(typeof(ImportCustomerDto[]), new XmlRootAttribute("Customer"));
+            var xmlSerializer = new XmlSerializer(typeof(ImportCustomerDto[]), new XmlRootAttribute("Customers"));
             var customersDto = (ImportCustomerDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
 
             List<Customer> customers = new List<Customer>();
@@ -192,11 +190,9 @@
             foreach (var customerDto in customersDto)
             {
                 Customer customer = Mapper.Map<Customer>(customerDto);
-
                 bool isValidCustomer = IsValid(customer);
 
                 var projectionsIds = context.Projections.Select(p => p.Id).ToList();
-
                 bool isProjectionsExist = customerDto.TicketsForProjection
                     .Select(t => t.ProjectionId)
                     .All(v => projectionsIds.Contains(v));
@@ -219,11 +215,10 @@
 
                 customers.Add(customer);
 
-
                 sb.AppendLine(string.Format(SuccessfulImportCustomerTicket,
-                                   customer.FirstName,
-                                    customer.LastName,
-                                    customer.Tickets.Count()));
+                    customer.FirstName,
+                     customer.LastName,
+                     customer.Tickets.Count()));
             }
 
             context.Customers.AddRange(customers);
