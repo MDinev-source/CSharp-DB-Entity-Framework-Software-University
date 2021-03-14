@@ -18,9 +18,8 @@
         public DbSet<Department> Departments { get; set; }
         public DbSet<Mail> Mails { get; set; }
         public DbSet<Officer> Officers { get; set; }
-        public DbSet<OfficerPrisoner> OfficerPrisoners { get; set; }
+        public DbSet<OfficerPrisoner> OfficersPrisoners { get; set; }
         public DbSet<Prisoner> Prisoners { get; set; }
-
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
@@ -35,6 +34,18 @@
 		{
 			builder.Entity<OfficerPrisoner>()
 			   .HasKey(k => new { k.OfficerId, k.PrisonerId });
+
+			builder.Entity<OfficerPrisoner>()
+			  .HasOne(p => p.Prisoner)
+			  .WithMany(po => po.PrisonerOfficers)
+			  .HasForeignKey(p => p.PrisonerId)
+			  .OnDelete(DeleteBehavior.Restrict);
+
+			builder.Entity<OfficerPrisoner>()
+				.HasOne(o => o.Officer)
+				.WithMany(op => op.OfficerPrisoners)
+				.HasForeignKey(o => o.OfficerId)
+				.OnDelete(DeleteBehavior.Restrict);
 		}
 	}
 }

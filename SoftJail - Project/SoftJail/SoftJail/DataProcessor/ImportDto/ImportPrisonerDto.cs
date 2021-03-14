@@ -3,32 +3,26 @@
     using Newtonsoft.Json;
     using SoftJail.Data.Models;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+
     public class ImportPrisonerDto
     {
-        [JsonProperty("FullName")]
+        [Required]
+        [MinLength(3), MaxLength(20)]
         public string FullName { get; set; }
-
-        [JsonProperty("Nickname")]
+        [Required]
+        [RegularExpression("^The [A-Z][a-z]+$")]
         public string Nickname { get; set; }
-
-        [JsonProperty("Age")]
+        [Required]
+        [Range(18, 65)]
         public int Age { get; set; }
-
-        [JsonProperty("IncarcerationDate")]
+        [Required]
         public string IncarcerationDate { get; set; }
-
-        [JsonProperty("ReleaseDate")]
         public string ReleaseDate { get; set; }
 
-        [JsonProperty("Bail")]
-        public bool? Bail { get; set; }
-
-        [JsonProperty("CellId")]
+        [Range(0.00, double.MaxValue)]
+        public decimal? Bail { get; set; }
         public int? CellId { get; set; }
-
-        [JsonProperty("Mails")]
-        public ICollection<Mail> Mails { get; set; }
-
-
+        public List<ImportMailDto> Mails { get; set; }
     }
 }

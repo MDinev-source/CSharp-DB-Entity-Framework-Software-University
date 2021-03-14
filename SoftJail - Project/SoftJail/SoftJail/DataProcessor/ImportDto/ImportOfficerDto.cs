@@ -1,26 +1,30 @@
 ﻿namespace SoftJail.DataProcessor.ImportDto
 {
+    using System.ComponentModel.DataAnnotations;
     using System.Xml.Serialization;
 
     [XmlType("Officer")]
     public class ImportOfficerDto
     {
-        [XmlElement(ElementName = "Name")]
+        [XmlElement("Name")]
+        [Required]
+        [MinLength(3), MaxLength(30)]
         public string FullName { get; set; }
-
-        [XmlElement(ElementName ="Money")]
+        [XmlElement("Money")]
+        [Required]
+        [Range(0.00, double.MaxValue)]
         public decimal Salary { get; set; }
-
-        [XmlElement(ElementName ="Position")]
+        [XmlElement("Position")]
+        [Required]
         public string Position { get; set; }
-
-        [XmlElement(ElementName ="Weapon")]
+        [XmlElement("Weapon")]
+        [Required]
         public string Weapon { get; set; }
-
-        [XmlElement(ElementName ="DepartmentId")]
+        [XmlElement("DepartmentId")]
+        [Required]
         public int DepartmentId { get; set; }
 
-        [XmlArray(ElementName ="Prisoners")]
+        [XmlArray("Prisoners")]
         public ImportOfficerPrisionersDto[] Prisoners { get; set; }
 
     }

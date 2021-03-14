@@ -1,13 +1,17 @@
 ﻿namespace SoftJail
 {
+    using System;
     using AutoMapper;
-
+    using SoftJail.Data.Models;
+    using System.Globalization;
+    using SoftJail.Data.Models.Enums;
+    using SoftJail.DataProcessor.ImportDto;
 
     public class SoftJailProfile : Profile
     {
-        // Configure your AutoMapper here if you wish to use it. If not, DO NOT DELETE THIS CLASS
         public SoftJailProfile()
         {
+        
         }
     }
 }
