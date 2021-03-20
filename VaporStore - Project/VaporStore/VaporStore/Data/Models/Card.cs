@@ -16,7 +16,7 @@
         public int Id { get; set; }
 
         [Required]
-        [RegularExpression(@"^\d{4} \d{4} \d{4} \d{4}$")]
+        [RegularExpression(@"^\d{4}\s\d{4}\s\d{4}\s\d{4}$")]
         public string Number { get; set; }
 
         [Required]

@@ -14,7 +14,7 @@
         public string Username { get; set; }
 
         [Required]
-        [RegularExpression(@"[A-Z]{1}[a-z]+ [A-Z] [a-z]+$")]
+        [RegularExpression(@"^[A-Z][a-z]+ [A-Z][a-z]+$")]
         public string FullName { get; set; }
 
         [Required]

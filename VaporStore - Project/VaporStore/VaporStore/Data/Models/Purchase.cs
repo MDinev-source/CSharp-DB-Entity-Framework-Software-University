@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using VaporStore.Data.Models.Enumerations;
 
@@ -17,7 +18,8 @@ namespace VaporStore.Data.Models
         public string ProductKey { get; set; }
 
         [Required]
-        public string Date { get; set; }
+
+        public DateTime Date { get; set; }
 
         [Required]
         [ForeignKey(nameof(Card))]
@@ -27,7 +29,7 @@ namespace VaporStore.Data.Models
 
         [Required]
         [ForeignKey(nameof(Game))]
-        public int GameID { get; set; }
+        public int GameId { get; set; }
 
         public Game Game { get; set; }
 

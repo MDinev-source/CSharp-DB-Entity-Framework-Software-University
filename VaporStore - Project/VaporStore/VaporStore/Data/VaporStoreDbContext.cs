@@ -32,7 +32,7 @@
 
         protected override void OnModelCreating(ModelBuilder model)
         {
-            model.Entity<GameTag>().HasKey(a => new { a.GameId, a.Tagid });
+            model.Entity<GameTag>().HasKey(a => new { a.GameId, a.TagId });
         }
     }
 }
