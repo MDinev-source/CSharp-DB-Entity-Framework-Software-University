@@ -7,7 +7,7 @@
     {
         public Cell()
         {
-            this.OfficerPrisoners = new HashSet<OfficerPrisoner>();
+            this.Prisoners = new HashSet<Prisoner>();
         }
 
         [Key]
@@ -26,6 +26,6 @@
 
         public Department Department { get; set; }
 
-        public ICollection<OfficerPrisoner> OfficerPrisoners { get; set; }
+        public ICollection<Prisoner> Prisoners { get; set; }
     }
 }
