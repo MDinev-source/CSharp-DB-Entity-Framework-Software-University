@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DataProcessor\Dto%27s\ImportDto%27s\" />
     <Folder Include="DataProcessor\Dto%27s\ExportDto%27s\" />
   </ItemGroup>
 
