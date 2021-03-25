@@ -13,6 +13,10 @@ namespace VaporStore.DataProcessor
     using System.ComponentModel.DataAnnotations;
     using VaporStore.DataProcessor.Dto_s.ImportDto_s;
     using ValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
+    using System.Xml;
+    using System.Xml.Serialization;
+    using System.IO;
+    using VaporStore.Data.Models.Enumerations;
 
     public static class Deserializer
     {
@@ -126,13 +130,13 @@ namespace VaporStore.DataProcessor
                     FullName = userDto.FullName,
                     Username = userDto.Username,
                     Email = userDto.Email,
-                    Cards=userDto.Cards
+                    Cards = userDto.Cards
                 };
 
                 bool isValidUser = IsValid(user);
                 bool isValidCard = user.Cards.Any(c => IsValid(c)) || user.Cards.Count > 0;
 
-                if (!isValidUser&&!isValidCard)
+                if (!isValidUser || !isValidCard)
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
@@ -153,7 +157,50 @@ namespace VaporStore.DataProcessor
 
         public static string ImportPurchases(VaporStoreDbContext context, string xmlString)
         {
-            throw new NotImplementedException();
+            var xmlSerializer = new XmlSerializer(typeof(ImportPurchaseDto[]), new XmlRootAttribute("Purchases"));
+            var purchasesDto = (ImportPurchaseDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
+
+            var purchases = new List<Purchase>();
+
+            var sb = new StringBuilder();
+
+            foreach (var purchaseDto in purchasesDto)
+            {
+
+                bool isValidDto = IsValid(purchaseDto);
+                bool isValidType = Enum.IsDefined(typeof(PurchaseType), purchaseDto.Type);
+                var targetGame = context.Games.FirstOrDefault(g => g.Name == purchaseDto.Title);
+                var targetCard = context.Cards.FirstOrDefault(c => c.Number == purchaseDto.Card);
+
+                if (isValidDto==false||
+                    isValidType==false||
+                    targetCard==null||
+                    targetCard == null)
+                {
+                    sb.AppendLine(ErrorMessage);
+                    continue;
+                }
+
+                Purchase purchase = new Purchase
+                {
+                    Card = targetCard,
+                    Game = targetGame,
+                    Date = DateTime.ParseExact(purchaseDto.Date, @"dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
+                    ProductKey = purchaseDto.Key,
+                    Type = (PurchaseType)Enum.Parse(typeof(PurchaseType), purchaseDto.Type)
+                };
+
+                purchases.Add(purchase);
+
+                sb.AppendLine(string.Format(ImportedPurchase,
+                    purchase.Game.Name,
+                    purchase.Card.User.Username));
+
+            }
+            context.Purchases.AddRange(purchases);
+            context.SaveChanges();
+
+            return sb.ToString().TrimEnd();
         }
 
         private static bool IsValid(object dto)
