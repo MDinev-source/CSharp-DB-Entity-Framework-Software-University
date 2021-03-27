@@ -6,7 +6,7 @@
     {
         public Performer()
         {
-            this.PerformerSong = new HashSet<SongPerformer>();
+            this.PerformerSongs = new HashSet<SongPerformer>();
         }
 
         [Key]
@@ -26,6 +26,6 @@
         [Range(typeof(decimal), "0.00", "79228162514264337593543950335")]
         public decimal NetWorth { get; set; }
 
-        public ICollection<SongPerformer> PerformerSong { get; set; }
+        public ICollection<SongPerformer> PerformerSongs { get; set; }
     }
 }
