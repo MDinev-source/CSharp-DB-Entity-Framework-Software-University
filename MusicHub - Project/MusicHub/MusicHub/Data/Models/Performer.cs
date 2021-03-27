@@ -20,7 +20,6 @@
         [MinLength(3), MaxLength(20)]
         public string LastName { get; set; }
 
-        [Required]
         [Range(18, 70)]
         public int Age { get; set; }
 
