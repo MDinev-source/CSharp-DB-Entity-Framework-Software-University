@@ -2,10 +2,10 @@
 {
     public enum Weapon
     {
-        Knife = 1,
-        FlashPulse = 2,
-        ChainRifle = 3,
-        Pistol = 4,
-        Sniper = 5
+        Knife, 
+        FlashPulse, 
+        ChainRifle, 
+        Pistol, 
+        Sniper
     }
 }

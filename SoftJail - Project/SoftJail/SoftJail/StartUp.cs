@@ -23,15 +23,8 @@
 
             using (var transaction = context.Database.BeginTransaction())
             {
-                BonusTask(context);
                 transaction.Rollback();
             }
-        }
-
-        private static void BonusTask(SoftJailDbContext context)
-        {
-            var bonusOutput = DataProcessor.Bonus.ReleasePrisoner(context, 5);
-            Console.WriteLine(bonusOutput);
         }
 
         private static void ImportEntities(SoftJailDbContext context, string baseDir, string exportDir)
