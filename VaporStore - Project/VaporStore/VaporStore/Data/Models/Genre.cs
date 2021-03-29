@@ -8,8 +8,6 @@
         {
             this.Games = new HashSet<Game>();
         }
-
-        [Key]
         public int Id { get; set; }
 
         [Required]

@@ -4,7 +4,10 @@
     using System.ComponentModel.DataAnnotations;
     public class Tag
     {
-        [Key]
+        public Tag()
+        {
+            this.GameTags = new HashSet<GameTag>();
+        }
         public int Id { get; set; }
 
         [Required]

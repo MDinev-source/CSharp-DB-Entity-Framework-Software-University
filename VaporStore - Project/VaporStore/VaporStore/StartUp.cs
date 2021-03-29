@@ -24,15 +24,8 @@
 
 			using (var transaction = context.Database.BeginTransaction())
 			{
-				BonusTask(context);
 				transaction.Rollback();
 			}
-		}
-
-		private static void BonusTask(VaporStoreDbContext context)
-		{
-			var bonusOutput = Bonus.UpdateEmail(context, "atobin", "amontobin@gmail.com");
-			Console.WriteLine(bonusOutput);
 		}
 
 		private static void ExportEntities(VaporStoreDbContext context, string exportDir)
