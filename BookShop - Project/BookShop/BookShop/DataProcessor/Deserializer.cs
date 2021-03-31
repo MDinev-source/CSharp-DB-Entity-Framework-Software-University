@@ -1,19 +1,18 @@
 ﻿namespace BookShop.DataProcessor
 {
-    using Data;
     using System;
-    using System.IO;
-    using System.Text;
-    using System.Linq;
-    using Newtonsoft.Json;
-    using System.Globalization;
-    using BookShop.Data.Models;
-    using System.Xml.Serialization;
-    using BookShop.Data.Models.Enums;
     using System.Collections.Generic;
-    using BookShop.DataProcessor.ImportDto;
     using System.ComponentModel.DataAnnotations;
-
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Xml.Serialization;
+    using BookShop.Data.Models;
+    using BookShop.Data.Models.Enums;
+    using BookShop.DataProcessor.ImportDto;
+    using Data;
+    using Newtonsoft.Json;
     using ValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
 
     public class Deserializer
@@ -28,120 +27,109 @@
 
         public static string ImportBooks(BookShopContext context, string xmlString)
         {
+            var xmlSerializer = new XmlSerializer(typeof(ImportBooksDto[]), new XmlRootAttribute("Books"));
+
+            var importBookDto = (ImportBooksDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
+
+            var books = new List<Book>();
+
             var sb = new StringBuilder();
 
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(ImportBookDto[]), new XmlRootAttribute("Books"));
-
-            using (StringReader stringReader = new StringReader(xmlString))
+            foreach (var importDto in importBookDto)
             {
-                ImportBookDto[] bookDtos = (ImportBookDto[])xmlSerializer.Deserialize(stringReader);
+                bool isValidGenre =int.Parse(importDto.Genre) >= 1 && int.Parse(importDto.Genre) <= 3;
 
-                List<Book> validBooks = new List<Book>();
-
-                foreach (ImportBookDto bookDto in bookDtos)
+                if (!IsValid(importDto) ||
+                    !isValidGenre)
                 {
-                    if (!IsValid(bookDto))
-                    {
-                        sb.AppendLine(ErrorMessage);
-                        continue;
-                    }
-
-                    DateTime publishedOn;
-                    bool isDateValid = DateTime.TryParseExact
-                        (bookDto.PublishedOn, "MM/dd/yyyy",
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.None,
-                        out publishedOn);
-
-                    if (!isDateValid)
-                    {
-                        sb.AppendLine(ErrorMessage);
-                        continue;
-                    }
-
-                    Book validBook = new Book()
-                    {
-                        Name = bookDto.Name,
-                        Genre = (Genre)bookDto.Genre,
-                        Price = bookDto.Price,
-                        Pages = bookDto.Pages,
-                        PublishedOn = publishedOn
-                    };
-
-                    validBooks.Add(validBook);
-
-                    sb.AppendLine(String.Format(SuccessfullyImportedBook, validBook.Name, validBook.Price));
-
+                    sb.AppendLine(ErrorMessage);
+                    continue;
                 }
-                context.Books.AddRange(validBooks);
-                context.SaveChanges();
+
+                var book = new Book
+                {
+                    Name = importDto.Name,
+                    Genre = Enum.Parse<Genre>(importDto.Genre),
+                    Price = importDto.Price,
+                    Pages = importDto.Pages,
+                    PublishedOn = DateTime.ParseExact(importDto.PublishedOn, "MM/dd/yyyy", CultureInfo.InvariantCulture)
+                };
+
+                books.Add(book);
+
+                sb.AppendLine(string.Format(SuccessfullyImportedBook, book.Name,book.Price));
             }
+
+            context.Books.AddRange(books);
+            context.SaveChanges();
+
             return sb.ToString().TrimEnd();
         }
 
         public static string ImportAuthors(BookShopContext context, string jsonString)
         {
+            var importAuthorDto = JsonConvert.DeserializeObject<ImportAuthorsDto[]>(jsonString);
+
+            var authors = new List<Author>();
+            var books = new List<AuthorBook>();
+
             var sb = new StringBuilder();
 
-            ImportAuthorDto[] authorDtos = JsonConvert.DeserializeObject<ImportAuthorDto[]>(jsonString);
-
-            List<Author> authors = new List<Author>();
-
-            foreach (ImportAuthorDto authorDto in authorDtos)
+            foreach (var authorDto in importAuthorDto)
             {
                 if (!IsValid(authorDto))
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
                 }
-                if (authors.Any(a => a.Email == authorDto.Email))
+
+                var email = context.Authors.FirstOrDefault(x => x.Email == authorDto.Email);
+
+                if (email != null)
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
                 }
 
-                Author author = new Author()
+          
+
+                foreach (var book in authorDto.Books)
+                {
+
+                    var validbook = context.AuthorsBooks.FirstOrDefault(x => x.BookId == book.Id);
+                    if (validbook != null)
+                    {
+                        books.Add(validbook);
+                    }
+                }
+
+                if (!books.Any())
+                {
+                    sb.AppendLine(ErrorMessage);
+                    continue;
+                }
+
+                var author = new Author
                 {
                     FirstName = authorDto.FirstName,
                     LastName = authorDto.LastName,
+                    Phone = authorDto.Phone,
                     Email = authorDto.Email,
-                    Phone = authorDto.Phone
+
                 };
 
-                foreach (ImportAuthorBookDto bookDto in authorDto.Books)
+                foreach (var book in books)
                 {
-                    if (!bookDto.BookId.HasValue)
-                    {
-                        continue;
-                    }
-                    Book book = context
-                        .Books
-                        .FirstOrDefault(b => b.Id == bookDto.BookId);
-
-                    if (book == null)
-                    {
-                        continue;
-                    }
-
-                    author.AuthorsBooks.Add(new AuthorBook
-                    {
-                        Author = author,
-                        Book = book
-                    });
-
-                    if (author.AuthorsBooks.Count == 0)
-                    {
-                        sb.AppendLine(ErrorMessage);
-                        continue;
-                    }
-
-                    authors.Add(author);
-                    sb.AppendLine(String.Format(SuccessfullyImportedAuthor, (author.FirstName + ' ' + author.LastName), author.AuthorsBooks.Count));
+                    author.AuthorsBooks.Add(book);
                 }
 
+                var name = author.FirstName + " " + author.LastName;
+                sb.AppendLine(string.Format(SuccessfullyImportedAuthor, name, author.AuthorsBooks.Count));
             }
+
             context.Authors.AddRange(authors);
             context.SaveChanges();
+
             return sb.ToString().TrimEnd();
         }
 
