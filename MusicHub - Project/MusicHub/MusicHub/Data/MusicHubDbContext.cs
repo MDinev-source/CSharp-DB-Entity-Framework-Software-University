@@ -14,14 +14,14 @@
         {
         }
 
-        public DbSet<Song> Songs { get; set; }
-        public DbSet<Album> Albums { get; set; }
-        public DbSet<Performer> Performers { get; set; }
         public DbSet<Producer> Producers { get; set; }
         public DbSet<Writer> Writers { get; set; }
-        public DbSet<SongPerformer> SongPerformers { get; set; }
+        public DbSet<Album> Albums { get; set; }
+        public DbSet<Song> Songs { get; set; }
+        public DbSet<Performer> Performers { get; set; }
+        public DbSet<SongPerformer> SongsPerformers { get; set; }
 
-       protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
@@ -33,11 +33,11 @@
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<SongPerformer>()
-                 .HasKey(k => new
-                 {
-                     k.SongId,
-                     k.PerformerId
-                 });
+                .HasKey(k => new
+                {
+                    k.SongId,
+                    k.PerformerId
+                });
         }
     }
 }

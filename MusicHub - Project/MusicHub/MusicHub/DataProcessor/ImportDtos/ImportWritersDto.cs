@@ -1,17 +1,17 @@
 ﻿namespace MusicHub.DataProcessor.ImportDtos
 {
-    using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
+    using System.Text;
 
     public class ImportWritersDto
     {
-        [JsonProperty("Name")]
         [Required]
-        [MinLength(3), MaxLength(30)]
+        [MinLength(3), MaxLength(20)]
         public string Name { get; set; }
 
-        [JsonProperty("Pseudonym")]
-        [RegularExpression(@"^[A - Z][a - z] +\s[A - Z][a - z] +$")]
+        [RegularExpression(@"^[A-Z][a-z]+\s[A-Z][a-z]+$")]
         public string Pseudonym { get; set; }
 
     }

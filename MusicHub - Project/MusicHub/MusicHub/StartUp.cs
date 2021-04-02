@@ -21,7 +21,7 @@
             var projectDir = GetProjectDirectory();
             
             ImportEntities(context, projectDir + @"Datasets/", projectDir + @"ImportResults/");
-            //ExportEntities(context, projectDir + @"ExportResults/");
+            ExportEntities(context, projectDir + @"ExportResults/");
 
             using (var transaction = context.Database.BeginTransaction())
             {
@@ -48,16 +48,16 @@
             PrintAndExportEntityToFile(performers, exportDir + "ImportSongPerformers.txt");
         }
 
-        //private static void ExportEntities(MusicHubDbContext context, string exportDir)
-        //{
-        //    var jsonOutput = DataProcessor.Serializer.ExportAlbumsInfo(context, 9);
-        //    Console.WriteLine(jsonOutput);
-        //    File.WriteAllText(exportDir + "Actual - AlbumsInfo.json", jsonOutput);
+        private static void ExportEntities(MusicHubDbContext context, string exportDir)
+        {
+            var jsonOutput = DataProcessor.Serializer.ExportAlbumsInfo(context, 9);
+            Console.WriteLine(jsonOutput);
+            File.WriteAllText(exportDir + "Actual - AlbumsInfo.json", jsonOutput);
 
-        //    var xmlOutput = DataProcessor.Serializer.ExportSongsAboveDuration(context, 4);
-        //    Console.WriteLine(xmlOutput);
-        //    File.WriteAllText(exportDir + "Actual - SongsAboveDuration.xml", xmlOutput);
-        //}
+            var xmlOutput = DataProcessor.Serializer.ExportSongsAboveDuration(context, 4);
+            Console.WriteLine(xmlOutput);
+            File.WriteAllText(exportDir + "Actual - SongsAboveDuration.xml", xmlOutput);
+        }
 
         private static void ResetDatabase(MusicHubDbContext context, bool shouldDropDatabase = false)
         {

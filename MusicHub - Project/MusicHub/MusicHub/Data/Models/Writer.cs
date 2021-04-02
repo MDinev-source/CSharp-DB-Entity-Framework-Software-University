@@ -8,15 +8,11 @@
         {
             this.Songs = new HashSet<Song>();
         }
-        [Key]
         public int Id { get; set; }
 
         [Required]
-        [MinLength(3), MaxLength(20)]
         public string Name { get; set; }
 
-        
-        [RegularExpression(@"^[A - Z][a - z] +\s[A - Z][a - z] +$")]
         public string Pseudonym { get; set; }
 
         public ICollection<Song> Songs { get; set; }
