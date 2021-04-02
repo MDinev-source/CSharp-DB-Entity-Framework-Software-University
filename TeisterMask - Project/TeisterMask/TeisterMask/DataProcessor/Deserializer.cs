@@ -13,6 +13,7 @@
     using System.Linq;
     using System.Text;
     using TeisterMask.Data.Models.Enums;
+    using Newtonsoft.Json;
 
     public class Deserializer
     {
@@ -104,7 +105,51 @@
 
         public static string ImportEmployees(TeisterMaskContext context, string jsonString)
         {
-            throw new NotImplementedException();
+            var importEmployees = JsonConvert.DeserializeObject<ImportEmployeesDto[]>(jsonString);
+
+            var employees = new List<Employee>();
+
+            var sb = new StringBuilder();
+
+            foreach (var employeeDto in importEmployees)
+            {
+
+                if (!IsValid(employeeDto))
+                {
+                    sb.AppendLine(ErrorMessage);
+                    continue;
+                }
+
+                var employee = new Employee
+                {
+                    Username = employeeDto.Username,
+                    Email = employeeDto.Email,
+                    Phone = employeeDto.Phone
+                };
+
+                foreach (var taskId in employeeDto.Tasks.Distinct())
+                {
+                    if (!context.Tasks.Any(x => x.Id == taskId))
+                    {
+                        sb.AppendLine(ErrorMessage);
+                        continue;
+                    }
+
+                    employee.EmployeesTasks.Add(new EmployeeTask
+                    {
+                        TaskId = taskId
+                    });
+                }
+
+                employees.Add(employee);
+
+                sb.AppendLine(string.Format(SuccessfullyImportedEmployee, employee.Username, employee.EmployeesTasks.Count));
+            }
+
+            context.Employees.AddRange(employees);
+            context.SaveChanges();
+
+            return sb.ToString().TrimEnd();
         }
 
         private static bool IsValid(object dto)
