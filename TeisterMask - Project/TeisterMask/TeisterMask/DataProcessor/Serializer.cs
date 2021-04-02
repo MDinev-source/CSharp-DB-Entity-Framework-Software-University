@@ -1,11 +1,15 @@
 ﻿namespace TeisterMask.DataProcessor
 {
-    using System;
-    using System.Globalization;
-    using System.Linq;
     using Data;
+    using System;
+    using System.IO;
+    using System.Xml;
+    using System.Linq;
+    using System.Text;
     using Newtonsoft.Json;
-    using TeisterMask.Data.Models;
+    using System.Globalization;
+    using System.Xml.Serialization;
+    using TeisterMask.DataProcessor.ExportDto;
     using Formatting = Newtonsoft.Json.Formatting;
 
     public class Serializer
@@ -42,7 +46,35 @@
         }
         public static string ExportProjectWithTheirTasks(TeisterMaskContext context)
         {
-            throw new NotImplementedException();
+            var projects = context.Projects
+                .Where(p => p.Tasks.Any())
+                .Select(p => new ExportProjectsTasksDto
+                {
+                    TasksCount = p.Tasks.Count,
+                    ProjectName = p.Name,
+                    HasEndDate = p.DueDate == null
+                    ? "No"
+                    : "Yes",
+
+                    Tasks = p.Tasks.Select(t => new ExportTaskDto
+                    {
+                        Name = t.Name,
+                        Label = t.LabelType.ToString()
+                    })
+                    .OrderBy(t=>t.Name)
+                    .ToArray()
+                })
+                .OrderByDescending(p=>p.TasksCount)
+                .ThenBy(p=>p.ProjectName)
+                .ToArray();
+
+            var xmlSerializer = new XmlSerializer(typeof(ExportProjectsTasksDto[]), new XmlRootAttribute("Projects"));
+
+            var sb = new StringBuilder();
+            var namespaces = new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty });
+            xmlSerializer.Serialize(new StringWriter(sb), projects, namespaces);
+
+            return sb.ToString().TrimEnd();
         }
 
     }
