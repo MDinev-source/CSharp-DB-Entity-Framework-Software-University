@@ -1,22 +1,23 @@
 ﻿namespace Cinema.DataProcessor.ImportDto
 {
-    using Newtonsoft.Json;
-
-    public class ImportMovieDto
+    using System.ComponentModel.DataAnnotations;
+    public class ImportMoviesDto
     {
-        [JsonProperty("Title")]
+        [Required]
+        [MinLength(3), MaxLength(20)]
         public string Title { get; set; }
 
-        [JsonProperty("Genre")]
+        [Required]
         public string Genre { get; set; }
 
-        [JsonProperty("Duration")]
+        [Required]
         public string Duration { get; set; }
 
-        [JsonProperty("Rating")]
+        [Range(1,10)]
         public double Rating { get; set; }
 
-        [JsonProperty("Director")]
+        [Required]
+        [MinLength(3), MaxLength(20)]
         public string Director { get; set; }
 
     }

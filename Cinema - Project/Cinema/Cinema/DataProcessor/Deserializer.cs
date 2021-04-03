@@ -2,18 +2,18 @@
 {
     using Data;
     using System;
-    using System.IO;
-    using AutoMapper;
-    using System.Linq;
     using System.Text;
     using Newtonsoft.Json;
     using Cinema.Data.Models;
-    using Cinema.Data.Models.Enums;
-    using System.Xml.Serialization;
     using System.Collections.Generic;
     using Cinema.DataProcessor.ImportDto;
     using System.ComponentModel.DataAnnotations;
     using ValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
+    using System.Linq;
+    using Cinema.Data.Models.Enums;
+    using System.Globalization;
+    using System.Xml.Serialization;
+    using System.IO;
 
     public class Deserializer
     {
@@ -29,39 +29,36 @@
 
         public static string ImportMovies(CinemaContext context, string jsonString)
         {
-            var moviesDto = JsonConvert.DeserializeObject<ImportMovieDto[]>(jsonString);
+            var moviesImport = JsonConvert.DeserializeObject<ImportMoviesDto[]>(jsonString);
 
-            List<Movie> movies = new List<Movie>();
+            var movies = new List<Movie>();
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-            foreach (var movieDto in moviesDto)
+            foreach (var importMovieDto in moviesImport)
             {
-                bool isValidGenre = Enum.IsDefined(typeof(Genre), movieDto.Genre);
-                bool isMovieExist = movies.Any(m => m.Title == movieDto.Title);
+                var validGenre = Enum.TryParse(importMovieDto.Genre, out Genre genre);
 
-                if (isValidGenre == false || isMovieExist == true)
+                if (!IsValid(importMovieDto) ||
+                    !validGenre ||
+                    movies.Any(x => x.Title == importMovieDto.Title))
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
                 }
 
-                Movie movie = Mapper.Map<Movie>(movieDto);
-
-                bool isValidMovie = IsValid(movie);
-
-                if (isValidMovie == false)
+                var movie = new Movie
                 {
-                    sb.AppendLine(ErrorMessage);
-                    continue;
-                }
+                    Title = importMovieDto.Title,
+                    Genre = genre,
+                    Duration = TimeSpan.ParseExact(importMovieDto.Duration, @"hh\:mm\:ss", CultureInfo.InvariantCulture),
+                    Rating = importMovieDto.Rating,
+                    Director = importMovieDto.Director
+                };
 
                 movies.Add(movie);
 
-                sb.AppendLine(string.Format(SuccessfulImportMovie,
-                    movie.Title,
-                    movie.Genre.ToString(),
-                    movie.Rating.ToString("F2")));
+                sb.AppendLine(string.Format(SuccessfulImportMovie, movie.Title, movie.Genre.ToString(), movie.Rating.ToString("F2")));
             }
 
             context.Movies.AddRange(movies);
@@ -70,55 +67,48 @@
             return sb.ToString().TrimEnd();
         }
 
-        private static bool IsValid(object dto)
-        {
-
-            var validationContext = new ValidationContext(dto);
-            var validationResult = new List<ValidationResult>();
-
-            return Validator.TryValidateObject(dto, validationContext, validationResult, true);
-        }
-
         public static string ImportHallSeats(CinemaContext context, string jsonString)
         {
-            var hallsDto = JsonConvert.DeserializeObject<ImportHallWithSeatsDto[]>(jsonString);
+            var hallsImport = JsonConvert.DeserializeObject<ImportHallsSeastsDto[]>(jsonString);
 
-            List<Hall> halls = new List<Hall>();
+            var halls = new List<Hall>();
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-            foreach (var hallDto in hallsDto)
+            foreach (var importHallSeatsDto in hallsImport)
             {
-                bool isValidDto = IsValid(hallsDto);
-
-                Hall hall = Mapper.Map<Hall>(hallDto);
-
-                bool isValidHall = IsValid(hall);
-
-                if (isValidDto == false || isValidHall == false)
+                if (!IsValid(importHallSeatsDto) ||
+                    importHallSeatsDto.Seats <= 0)
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
                 }
 
-                for (int i = 0; i < hallDto.SeatsCount; i++)
+                var hall = new Hall
                 {
+                    Name = importHallSeatsDto.Name,
+                    Is4Dx = importHallSeatsDto.Is4Dx,
+                    Is3D = importHallSeatsDto.Is3D
+                };
 
+                for (int i = 1; i <= importHallSeatsDto.Seats; i++)
+                {
                     hall.Seats.Add(new Seat());
                 }
 
+                halls.Add(hall);
+
                 string projectionType = string.Empty;
 
-                if (hall.Is3D == true && hall.Is4Dx == true)
+                if (hall.Is4Dx && hall.Is3D)
                 {
                     projectionType = "4Dx/3D";
                 }
-
-                else if (hall.Is4Dx == true)
+                else if (hall.Is4Dx && !hall.Is3D)
                 {
                     projectionType = "4Dx";
                 }
-                else if (hall.Is3D == true)
+                else if (!hall.Is4Dx && hall.Is3D)
                 {
                     projectionType = "3D";
                 }
@@ -127,51 +117,50 @@
                     projectionType = "Normal";
                 }
 
-                halls.Add(hall);
-
-                sb.AppendLine(string.Format(SuccessfulImportHallSeat,
-                        hall.Name,
-                        projectionType,
-                        hall.Seats.Count()));
+                sb.AppendLine(string.Format(SuccessfulImportHallSeat, hall.Name, projectionType, hall.Seats.Count));
             }
 
             context.Halls.AddRange(halls);
             context.SaveChanges();
 
             return sb.ToString().TrimEnd();
-
         }
 
         public static string ImportProjections(CinemaContext context, string xmlString)
         {
-            var xmlSerializer = new XmlSerializer(typeof(ImportProjectionDto[]), new XmlRootAttribute("Projections"));
+            var xmlSerializer = new XmlSerializer(typeof(ImportProjectionsDto[]), new XmlRootAttribute("Projections"));
 
-            var projectionsDto = (ImportProjectionDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
+            var projectionsImport = (ImportProjectionsDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
 
-            List<Projection> projections = new List<Projection>();
+            var projections = new List<Projection>();
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-            foreach (var projectionDto in projectionsDto)
+            foreach (var importProjectionDto in projectionsImport)
             {
-                Projection projection = Mapper.Map<Projection>(projectionDto);
-                bool isValidProjection = IsValid(projection);
 
-                var hall = context.Halls.Find(projectionDto.HallId);
-                var movie = context.Movies.Find(projectionDto.MovieId);
+                var validMovie = context.Movies.FirstOrDefault(x => x.Id == importProjectionDto.MovieId);
+                var validHall = context.Halls.FirstOrDefault(x => x.Id == importProjectionDto.HallId);
 
-                if (isValidProjection == false || hall == null || movie == null)
+                if (validHall == null
+                    || validMovie == null)
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
                 }
 
-                projection.Movie = movie;
-                projection.Hall = hall;
+                var projection = new Projection
+                {
+                    MovieId = importProjectionDto.MovieId,
+                    HallId = importProjectionDto.HallId,
+                    DateTime = DateTime.ParseExact(importProjectionDto.DateTime, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+                };
+
                 projections.Add(projection);
 
-                sb.AppendLine(string.Format(SuccessfulImportProjection, projection.Movie.Title, projection.DateTime.ToString(@"MM/dd/yyyy")));
+                sb.AppendLine(string.Format(SuccessfulImportProjection, validMovie.Title, projection.DateTime.ToString("MM/dd/yyyy")));
             }
+
             context.Projections.AddRange(projections);
             context.SaveChanges();
 
@@ -180,51 +169,53 @@
 
         public static string ImportCustomerTickets(CinemaContext context, string xmlString)
         {
-            var xmlSerializer = new XmlSerializer(typeof(ImportCustomerDto[]), new XmlRootAttribute("Customers"));
-            var customersDto = (ImportCustomerDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
+            var xmlSerializer = new XmlSerializer(typeof(ImportCustomersTicketsDto[]), new XmlRootAttribute("Customers"));
+            var customersImport = (ImportCustomersTicketsDto[])xmlSerializer.Deserialize(new StringReader(xmlString));
 
-            List<Customer> customers = new List<Customer>();
+            var customers = new List<Customer>();
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-            foreach (var customerDto in customersDto)
+            foreach (var importCustomerDto in customersImport)
             {
-                Customer customer = Mapper.Map<Customer>(customerDto);
-                bool isValidCustomer = IsValid(customer);
 
-                var projectionsIds = context.Projections.Select(p => p.Id).ToList();
-                bool isProjectionsExist = customerDto.TicketsForProjection
-                    .Select(t => t.ProjectionId)
-                    .All(v => projectionsIds.Contains(v));
-
-                bool hasInvalidTickets = customerDto.TicketsForProjection.Any(t => IsValid(t) == false);
-
-                if (isValidCustomer == false || isProjectionsExist == false || hasInvalidTickets == true)
+                if (!IsValid(importCustomerDto)||
+                    !importCustomerDto.Tickets.All(IsValid))
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
                 }
 
-                customer.Tickets = customerDto.TicketsForProjection
-                    .Select(t => new Ticket
+                var customer = new Customer
+                {
+                    FirstName = importCustomerDto.FirstName,
+                    LastName = importCustomerDto.LastName,
+                    Age = importCustomerDto.Age,
+                    Balance = importCustomerDto.Balance,
+                    Tickets=importCustomerDto.Tickets.Select(x=>new Ticket
                     {
-                        ProjectionId = t.ProjectionId,
-                        Price = t.Price
-                    })
-                    .ToList();
+                        ProjectionId=x.Projectionid,
+                        Price=x.Price
+                    }).ToArray()
+                };
 
                 customers.Add(customer);
 
-                sb.AppendLine(string.Format(SuccessfulImportCustomerTicket,
-                    customer.FirstName,
-                     customer.LastName,
-                     customer.Tickets.Count()));
+                sb.AppendLine(string.Format(SuccessfulImportCustomerTicket, customer.FirstName, customer.LastName, customer.Tickets.Count));
             }
 
             context.Customers.AddRange(customers);
             context.SaveChanges();
 
             return sb.ToString().TrimEnd();
+        }
+
+        private static bool IsValid(object dto)
+        {
+            var validationContext = new ValidationContext(dto);
+            var validationResult = new List<ValidationResult>();
+
+            return Validator.TryValidateObject(dto, validationContext, validationResult, true);
         }
     }
 }

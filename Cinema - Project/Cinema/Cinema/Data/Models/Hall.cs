@@ -9,10 +9,9 @@
             this.Projections = new HashSet<Projection>();
             this.Seats = new HashSet<Seat>();
         }
-        [Key]
         public int Id { get; set; }
 
-        [MinLength(3), MaxLength(20), Required]
+        [Required]
         public string Name { get; set; }
 
         public bool Is4Dx { get; set; }
@@ -21,6 +20,5 @@
 
         public ICollection<Projection> Projections { get; set; }
         public ICollection<Seat> Seats { get; set; }
-
     }
 }

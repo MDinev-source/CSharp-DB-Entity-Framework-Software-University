@@ -1,17 +1,18 @@
 ﻿namespace Cinema.DataProcessor.ImportDto
 {
+    using System.ComponentModel.DataAnnotations;
     using System.Xml.Serialization;
-
     [XmlType("Projection")]
-    public class ImportProjectionDto
+    public class ImportProjectionsDto
     {
-        [XmlElement(ElementName = "MovieId")]
+        [XmlElement("MovieId")]
         public int MovieId { get; set; }
 
-        [XmlElement(ElementName ="HallId")]
+        [XmlElement("HallId")]
         public int HallId { get; set; }
 
-        [XmlElement(ElementName ="DateTime")]
+        [XmlElement("DateTime")]
+        [Required]
         public string DateTime { get; set; }
     }
 }

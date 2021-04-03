@@ -6,7 +6,7 @@ Successfully imported Aspergillus flavus(Normal) with 34 seats!
 Successfully imported Pain Relief Plus(4Dx) with 24 seats!
 Invalid data!
 Successfully imported Vitalizer(Normal) with 48 seats!
-Successfully imported Stroped(Normal) with 0 seats!
+Invalid data!
 Successfully imported CVS SPF 8(4Dx/3D) with 22 seats!
 Successfully imported CYZONE(Normal) with 22 seats!
 Invalid data!
