@@ -19,9 +19,9 @@
         public string LastName { get; set; }
 
         [Required]
-        [RegularExpression(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,})+)$")]
         public string Email { get; set; }
 
+        [Required]
         public string Phone { get; set; }
 
         public ICollection<AuthorBook> AuthorsBooks { get; set; }

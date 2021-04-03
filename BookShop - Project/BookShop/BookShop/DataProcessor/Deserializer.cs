@@ -37,7 +37,7 @@
 
             foreach (var importDto in importBookDto)
             {
-                bool isValidGenre =int.Parse(importDto.Genre) >= 1 && int.Parse(importDto.Genre) <= 3;
+                bool isValidGenre = int.Parse(importDto.Genre) >= 1 && int.Parse(importDto.Genre) <= 3;
 
                 if (!IsValid(importDto) ||
                     !isValidGenre)
@@ -57,7 +57,7 @@
 
                 books.Add(book);
 
-                sb.AppendLine(string.Format(SuccessfullyImportedBook, book.Name,book.Price));
+                sb.AppendLine(string.Format(SuccessfullyImportedBook, book.Name, book.Price));
             }
 
             context.Books.AddRange(books);
@@ -71,7 +71,6 @@
             var importAuthorDto = JsonConvert.DeserializeObject<ImportAuthorsDto[]>(jsonString);
 
             var authors = new List<Author>();
-            var books = new List<AuthorBook>();
 
             var sb = new StringBuilder();
 
@@ -83,27 +82,9 @@
                     continue;
                 }
 
-                var email = context.Authors.FirstOrDefault(x => x.Email == authorDto.Email);
+                var email = authors.FirstOrDefault(x => x.Email == authorDto.Email);
 
                 if (email != null)
-                {
-                    sb.AppendLine(ErrorMessage);
-                    continue;
-                }
-
-          
-
-                foreach (var book in authorDto.Books)
-                {
-
-                    var validbook = context.AuthorsBooks.FirstOrDefault(x => x.BookId == book.Id);
-                    if (validbook != null)
-                    {
-                        books.Add(validbook);
-                    }
-                }
-
-                if (!books.Any())
                 {
                     sb.AppendLine(ErrorMessage);
                     continue;
@@ -115,13 +96,32 @@
                     LastName = authorDto.LastName,
                     Phone = authorDto.Phone,
                     Email = authorDto.Email,
-
                 };
 
-                foreach (var book in books)
+
+                foreach (var bookId in authorDto.Books)
                 {
-                    author.AuthorsBooks.Add(book);
+                    var book = context.Books.FirstOrDefault(x => x.Id == bookId.Id);
+
+                    if (book == null)
+                    {
+                        continue;
+                    }
+
+                    author.AuthorsBooks.Add(new AuthorBook
+                    {
+                        Author=author,
+                        Book = book
+                    }); 
                 }
+
+                if (!author.AuthorsBooks.Any())
+                {
+                    sb.AppendLine(ErrorMessage);
+                    continue;
+                }
+
+                authors.Add(author);
 
                 var name = author.FirstName + " " + author.LastName;
                 sb.AppendLine(string.Format(SuccessfullyImportedAuthor, name, author.AuthorsBooks.Count));

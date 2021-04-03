@@ -11,8 +11,8 @@
         [MinLength(3), MaxLength(30)]
         public string Name { get; set; }
 
-        [Required]
         [XmlElement("Genre")]
+        [Required]
         public string Genre { get; set; }
 
         [XmlElement("Price")]

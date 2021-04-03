@@ -16,15 +16,14 @@
         [RegularExpression(@"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")]
         public string Phone { get; set; }
 
-        [RegularExpression(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,})+)$")]
+        [EmailAddress]
         public string Email { get; set; }
 
-        public ICollection<importBookIdDto> Books { get; set; }
+        public importAuthorBook[] Books { get; set; }
     }
 
-    public class importBookIdDto
+    public class importAuthorBook
     {
-        public int Id { get; set; }
-
+        public int? Id { get; set; }
     }
 }
