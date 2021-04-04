@@ -18,6 +18,7 @@
         public static string ExportMostBusiestEmployees(TeisterMaskContext context, DateTime date)
         {
             var employees = context.Employees
+                .ToList()
                 .Where(x => x.EmployeesTasks.Any(d => d.Task.OpenDate >= date))
                 .OrderByDescending(e => e.EmployeesTasks.Count(t => t.Task.OpenDate >= date))
                 .ThenBy(e => e.Username)
@@ -48,6 +49,7 @@
         {
             var projects = context.Projects
                 .Where(p => p.Tasks.Any())
+                .ToArray()
                 .Select(p => new ExportProjectsTasksDto
                 {
                     TasksCount = p.Tasks.Count,

@@ -83,8 +83,8 @@
                         Name = importTask.Name,
                         OpenDate = taskOpenDate,
                         DueDate = taskDueDate,
-                        ExecutionType = Enum.Parse<ExecutionType>(importTask.ExecutionType),
-                        LabelType = Enum.Parse<LabelType>(importTask.LabelType)
+                        ExecutionType = executionType,
+                        LabelType = labelType
                     };
 
                     project.Tasks.Add(task);
