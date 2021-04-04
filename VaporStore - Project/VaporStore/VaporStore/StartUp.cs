@@ -1,9 +1,9 @@
 ﻿namespace VaporStore
 {
+	using Data;
 	using System;
 	using System.IO;
 	using AutoMapper;
-	using Data;
 	using DataProcessor;
 	using Microsoft.EntityFrameworkCore;
 
